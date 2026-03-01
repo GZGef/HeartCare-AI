@@ -7,7 +7,7 @@ import pandas as pd
 from typing import Dict, Any, List, Optional
 import random
 
-from config.settings import TARGET_LABELS
+from config.settings import TARGET_LABELS, TARGET_COLUMN
 
 
 def set_random_seed(seed: int = 42) -> None:
@@ -98,8 +98,8 @@ def validate_data_structure(df: pd.DataFrame) -> Dict[str, Any]:
         )
     
     # Проверка типа данных целевой переменной
-    if 'ExerciseAngina' in df.columns:
-        unique_values = df['ExerciseAngina'].unique()
+    if TARGET_COLUMN in df.columns:
+        unique_values = df[TARGET_COLUMN].unique()
         valid_values = ['N', 'Y']
         invalid_values = [val for val in unique_values if val not in valid_values]
         if invalid_values:
@@ -168,13 +168,14 @@ def create_test_sample(df: pd.DataFrame, n_samples: int = 5) -> pd.DataFrame:
     return df.iloc[random_indices].copy()
 
 
-def save_results_to_file(results: Dict[str, Any], filename: str = "results.txt") -> None:
+def save_results_to_file(results: Dict[str, Any], filename: str = "results.txt", indent: int = 0) -> None:
     """
-    Сохранение результатов в текстовый файл
+    Сохранение результатов в текстовый файл с поддержкой вложенных словарей
     
     Args:
         results: Словарь с результатами
         filename: Имя файла
+        indent: Уровень отступа (для рекурсии)
     """
     import os
     
@@ -186,12 +187,18 @@ def save_results_to_file(results: Dict[str, Any], filename: str = "results.txt")
         f.write("="*50 + "\n\n")
         
         for key, value in results.items():
-            f.write(f"{key}:\n")
+            prefix = "  " * indent
             if isinstance(value, dict):
+                f.write(f"{prefix}{key}:\n")
                 for k, v in value.items():
-                    f.write(f"  {k}: {v}\n")
+                    if isinstance(v, dict):
+                        f.write(f"{prefix}  {k}:\n")
+                        for kk, vv in v.items():
+                            f.write(f"{prefix}    {kk}: {vv}\n")
+                    else:
+                        f.write(f"{prefix}  {k}: {v}\n")
             else:
-                f.write(f"  {value}\n")
+                f.write(f"{prefix}{key}: {value}\n")
             f.write("\n")
     
     print(f"Результаты сохранены в файл: {filepath}")

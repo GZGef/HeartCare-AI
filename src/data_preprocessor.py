@@ -119,6 +119,12 @@ class DataPreprocessor:
         # Объединение обработанных признаков
         X_processed = np.hstack([numerical_scaled, categorical_encoded])
         
+        # Сохранение имён признаков для использования в визуализации
+        self.feature_names = (
+            list(numerical_columns.columns) + 
+            list(self.one_hot_encoder.get_feature_names_out())
+        )
+        
         print(f"Признаки обработаны:")
         print(f"- Числовые признаки: {numerical_columns.shape[1]}")
         print(f"- Категориальные признаки (после кодирования): {categorical_encoded.shape[1]}")

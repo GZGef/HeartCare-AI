@@ -107,14 +107,17 @@ def main():
         
         # 9. Визуализация результатов
         print("\n9. Создание визуализаций...")
+        saved_plot_paths = []
         try:
             visualizer = Visualizer()
             
-            # Получение важности признаков
-            feature_importance = xgb_model.get_feature_importance()
+            # Получение важности признаков с реальными именами признаков
+            feature_importance = xgb_model.get_feature_importance(
+                feature_names=preprocessor.feature_names
+            )
             
             # Создание всех визуализаций
-            visualizer.plot_all_visualizations(
+            saved_plot_paths = visualizer.plot_all_visualizations(
                 df=df,
                 y_true=y_test,
                 y_pred=y_pred,
@@ -149,13 +152,25 @@ def main():
     print("\n11. Сохранение результатов...")
     try:
         results = {
-            'Модель': 'XGBoost',
-            'Точность на тесте': f"{xgb_test_score*100:.2f}%" if xgb_model else "N/A",
-            'Точность на обучении': f"{xgb_model.model.score(X_train, y_train)*100:.2f}%" if xgb_model else "N/A",
-            'Параметры XGBoost': {
-                'n_estimators': 100,
-                'learning_rate': 0.01,
-                'max_depth': 3,
+            'Модели': {
+                'Random Forest': {
+                    'Точность на тесте': f"{rf_test_score*100:.2f}%" if rf_model else "N/A",
+                    'Точность на обучении': f"{rf_model.model.score(X_train, y_train)*100:.2f}%" if rf_model else "N/A",
+                    'Параметры': {
+                        'n_estimators': 100,
+                        'max_depth': 5,
+                        'random_state': 20,
+                    },
+                },
+                'XGBoost': {
+                    'Точность на тесте': f"{xgb_test_score*100:.2f}%" if xgb_model else "N/A",
+                    'Точность на обучении': f"{xgb_model.model.score(X_train, y_train)*100:.2f}%" if xgb_model else "N/A",
+                    'Параметры': {
+                        'n_estimators': 100,
+                        'learning_rate': 0.01,
+                        'max_depth': 3,
+                    },
+                },
             },
             'Размерность данных': df.shape,
             'Размер обучающей выборки': X_train.shape,
@@ -191,6 +206,18 @@ def main():
     print(f"   - Модели: results/models/")
     print(f"   - Графики: results/plots/")
     print(f"   - Текстовые отчеты: results/")
+    
+    # Открываем каждый график в отдельном окне
+    if 'saved_plot_paths' in locals() and saved_plot_paths:
+        print("\nОткрытие графиков...")
+        visualizer = Visualizer()
+        for plot_path in saved_plot_paths:
+            visualizer.open_plot_file(plot_path)
+    else:
+        # Резервный вариант, если список путей пуст
+        print("\nОткрытие папки с графиками...")
+        visualizer = Visualizer()
+        visualizer.open_plots_folder()
     
     print("\n" + "="*70)
     print("✅ ПРОГРАММА ЗАВЕРШЕНА УСПЕШНО!")
