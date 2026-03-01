@@ -41,7 +41,7 @@ env/
 
 # Результаты
 results/models/
-results/plots/
+# results/plots/
 *.pkl
 *.joblib
 
